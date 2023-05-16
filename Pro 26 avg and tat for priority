@@ -1,0 +1,66 @@
+#include<stdio.h>
+
+void priority_scheduling(int processes[][3], int n) {
+    int total_waiting_time = 0, total_turnaround_time = 0;
+
+    // Sort the processes based on priority (ascending order)
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (processes[j][2] > processes[j+1][2]) {
+                // Swap processes
+                int temp[3];
+                for (int k = 0; k < 3; k++) {
+                    temp[k] = processes[j][k];
+                    processes[j][k] = processes[j+1][k];
+                    processes[j+1][k] = temp[k];
+                }
+            }
+        }
+    }
+
+    // Calculate waiting time for each process
+    int waiting_time[n];
+    waiting_time[0] = 0;
+    for (int i = 1; i < n; i++) {
+        waiting_time[i] = processes[i-1][1] + waiting_time[i-1];
+    }
+
+    // Calculate turnaround time for each process
+    int turnaround_time[n];
+    for (int i = 0; i < n; i++) {
+        turnaround_time[i] = processes[i][1] + waiting_time[i];
+    }
+
+    // Calculate total waiting time and total turnaround time
+    for (int i = 0; i < n; i++) {
+        total_waiting_time += waiting_time[i];
+        total_turnaround_time += turnaround_time[i];
+    }
+
+    // Compute average waiting time and average turnaround time
+    float avg_waiting_time = (float)total_waiting_time / n;
+    float avg_turnaround_time = (float)total_turnaround_time / n;
+
+    // Display results
+    printf("Process\tBurst Time\tPriority\tWaiting Time\tTurnaround Time\n");
+    for (int i = 0; i < n; i++) {
+        printf("P%d\t\t%d\t\t%d\t\t%d\t\t%d\n", i+1, processes[i][0], processes[i][2], waiting_time[i], turnaround_time[i]);
+    }
+    printf("\nAverage Waiting Time: %.2f\n", avg_waiting_time);
+    printf("Average Turnaround Time: %.2f\n", avg_turnaround_time);
+}
+
+int main() {
+    // Define the processes
+    int processes[][3] = {
+        {30, 2},
+        {5, 1},
+        {12, 3}
+    };
+    int n = sizeof(processes) / sizeof(processes[0]);
+
+    // Perform priority scheduling
+    priority_scheduling(processes, n);
+
+    return 0;
+}
