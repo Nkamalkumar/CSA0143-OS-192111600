@@ -1,0 +1,70 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<semaphore.h>
+
+sem_t semaphore;
+
+void* process(void* arg) {
+    int process_id = *((int*)arg);
+
+    printf("Process P%d is waiting...\n", process_id);
+
+    // Wait operation on the semaphore
+    sem_wait(&semaphore);
+
+    printf("Process P%d is inside the critical section.\n", process_id);
+
+    // Simulate some work
+    sleep(2);
+
+    printf("Process P%d is exiting the critical section.\n", process_id);
+
+    // Signal operation on the semaphore
+    sem_post(&semaphore);
+
+    pthread_exit(NULL);
+}
+
+int main() {
+    int num_instances = 4;
+    int num_processes = 4;
+    int process_ids[] = {1, 2, 3, 4};
+
+    // Initialize semaphore with number of instances
+    sem_init(&semaphore, 0, num_instances);
+
+    pthread_t threads[num_processes];
+
+    // Create threads for each process
+    for (int i = 0; i < num_processes; i++) {
+        pthread_create(&threads[i], NULL, process, &process_ids[i]);
+    }
+
+    // Simulate another process wanting the same resource
+    sleep(1);
+    printf("Process P5 wants the same resource.\n");
+
+    // Wait operation on the semaphore
+    sem_wait(&semaphore);
+
+    printf("Process P5 is inside the critical section.\n");
+
+    // Simulate some work
+    sleep(2);
+
+    printf("Process P5 is exiting the critical section.\n");
+
+    // Signal operation on the semaphore
+    sem_post(&semaphore);
+
+    // Join threads
+    for (int i = 0; i < num_processes; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // Destroy semaphore
+    sem_destroy(&semaphore);
+
+    return 0;
+}
